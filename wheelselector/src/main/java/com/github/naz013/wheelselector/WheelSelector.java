@@ -7,7 +7,9 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.support.annotation.Nullable;
+import android.support.v4.view.GestureDetectorCompat;
 import android.util.AttributeSet;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -27,7 +29,7 @@ import android.view.View;
  * limitations under the License.
  */
 
-public class WheelSelector extends View {
+public class WheelSelector extends View implements GestureDetector.OnGestureListener {
 
     private String[] mItems = new String[]{};
     private Rect[] mRects = new Rect[]{};
@@ -44,6 +46,7 @@ public class WheelSelector extends View {
     private int mMiddleY;
     private int mMiddleX;
 
+    private GestureDetectorCompat mDetector;
     private OnWheelScrollListener mListener;
 
     public WheelSelector(Context context) {
@@ -94,9 +97,11 @@ public class WheelSelector extends View {
             this.mItems[i] = String.valueOf(i + 1);
         }
 
+        mDetector = new GestureDetectorCompat(context, this);
         setOnTouchListener(new OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
+                mDetector.onTouchEvent(event);
                 return processTouch(event);
             }
         });
@@ -109,10 +114,6 @@ public class WheelSelector extends View {
             return true;
         } else if (event.getAction() == MotionEvent.ACTION_MOVE) {
             moveWheel(event.getX(), event.getY());
-            return true;
-        } else if (event.getAction() == MotionEvent.ACTION_UP) {
-            moveWithForce(event.getX(), event.getY());
-            centreSelected(event.getX());
             return true;
         }
         return false;
@@ -226,6 +227,38 @@ public class WheelSelector extends View {
             this.mRects[i] = new Rect(stX, 0, end, height);
             stX = end;
         }
+    }
+
+    @Override
+    public boolean onDown(MotionEvent e) {
+        return false;
+    }
+
+    @Override
+    public void onShowPress(MotionEvent e) {
+
+    }
+
+    @Override
+    public boolean onSingleTapUp(MotionEvent e) {
+        return false;
+    }
+
+    @Override
+    public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+        return false;
+    }
+
+    @Override
+    public void onLongPress(MotionEvent e) {
+
+    }
+
+    @Override
+    public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+        moveWithForce(e2.getX(), e2.getY());
+        centreSelected(e2.getX());
+        return false;
     }
 
     public interface OnWheelScrollListener {
